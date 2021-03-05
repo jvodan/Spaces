@@ -10,7 +10,8 @@ module Providers
         provider "#{type}" {
           generate_client_certificates = "#{configuration.generate_client_certificates}"
           accept_remote_certificate    = "#{configuration.accept_remote_certificate}"
-		  #{remote_stanza}
+
+          #{remote_stanza}
         }
       )
     end
@@ -30,7 +31,7 @@ module Providers
     def pool_stanzas
       %(
         resource "#{type}_storage_pool" "data-pool" {
-          name = "data"
+          name = "data-pool"
           driver = "dir"
           config = {
             source = "/var/lib/containers/#{arena.identifier}/data"
@@ -38,7 +39,7 @@ module Providers
         }
 
         resource "#{type}_storage_pool" "logs-pool" {
-          name = "logs"
+          name = "logs-pool"
           driver = "dir"
           config = {
             source = "/var/lib/containers/#{arena.identifier}/logs"

@@ -3,15 +3,23 @@ require 'resolv'
 module Divisions
   class Binding < ::Divisions::TargetingSubdivision
 
+    alias_accessor :arena, :emission
+
     def type; struct.type ;end
     def embed?; type == 'embed' ;end
 
+    def localised
+      empty.tap do |m|
+        m.struct = struct.without(:target).tap do |s|
+          s.identifier ||= target_identifier
+          s.target_identifier = target_identifier
+        end
+      end
+    end
+
     def inflated
       empty.tap do |m|
-        m.struct.tap do |s|
-          s.identifier = identifier
-          s.type = type if type
-          s.target = blueprint_target.inflated.struct
+        m.struct = struct.tap do |s|
           s.configuration = inflated_configuration
         end
       end
@@ -27,7 +35,7 @@ module Divisions
       end
     end
 
-    def infix_qualifier; root_identifier ;end
+    def infix_qualifier; target_identifier ;end
 
     def target_configuration
       @target_configuration ||=
@@ -39,6 +47,10 @@ module Divisions
     def struct_configuration; struct.configuration || OpenStruct.new ;end
 
     def keys; struct_configuration.to_h.keys ;end
+
+    def environment_variables
+      struct_configuration.to_h.map { |k, v| "--env=#{k}=#{v}" }.join(' ')
+    end
 
     def method_missing(m, *args, &block)
       keys&.include?(m) ? struct_configuration[m] : super
